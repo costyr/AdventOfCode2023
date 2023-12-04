@@ -1,47 +1,57 @@
-const { compileFunction } = require('vm');
 const util = require('./Util.js');
-const { access } = require('fs');
 
 function ComputeScore(aCards) {
-  let sum = 0;
-  for (let i = 0; i < aCards.length; i++)
-  {
+  return aCards.reduce((aTotal, aCard) => {
     let count = 0;
-    for (let j = 0; j < aCards[i].winners.length; j++)
-    {
-      if (aCards[i].winners[j] == -1)
+    for (let j = 0; j < aCard.winners.length; j++) {
+      if (aCard.winners[j] == -1)
         continue;
 
-      if (aCards[i].all.indexOf(aCards[i].winners[j]) >= 0)
-        count ++;
+      if (aCard.all.indexOf(aCard.winners[j]) >= 0)
+        count++;
     }
 
+    let score = 0;
     if (count > 0) {
+      score = Math.pow(2, count - 1);
 
-      console.log(aCards[i].card + ": " + Math.pow(2 , count - 1));
+      console.log(aCard.card + ": " + score);
 
-      sum += Math.pow(2 , count - 1);
+      for (let l = 0; l < aCard.count; l++)
+        for (let k = 1; k <= count; k++) {
+          let ci = aCard.card + k;
+
+          aCards[ci - 1].count++;
+        }
     }
-  }
 
-  return sum;
+    return aTotal + score;
+  }, 0);
+}
+
+function ComputeScore2(aCards) {
+  return aCards.reduce((aTotal, aElem) => {
+    return aTotal + aElem.count;
+  }, 0);
 }
 
 let cards = util.MapInput("./Day4Input.txt", (aElem) => {
 
   let card = aElem.split(": ");
 
-  let cardID = parseInt(card[0].split(" ")[1]);
+  let uu = card[0].split(" ");
+
+  let cardID = parseInt(uu[uu.length - 1]);
 
   let board = card[1].split(" | ");
 
-  let winners = board[0].split(" ").map((aElem)=> { if (aElem == "") return -1; else return parseInt(aElem);});
-  let all = board[1].split(" ").map((aElem)=> { if (aElem == "") return -1; else return parseInt(aElem);});
+  let winners = board[0].split(" ").map((aElem) => { if (aElem == "") return -1; else return parseInt(aElem); });
+  let all = board[1].split(" ").map((aElem) => { if (aElem == "") return -1; else return parseInt(aElem); });
 
-  return { card: cardID, winners: winners, all:all };
+  return { card: cardID, count: 1, winners: winners, all: all };
 
 }, "\r\n");
 
-console.log(cards);
-
 console.log(ComputeScore(cards));
+
+console.log(ComputeScore2(cards));
