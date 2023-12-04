@@ -15,8 +15,6 @@ function ComputeScore(aCards) {
     if (count > 0) {
       score = Math.pow(2, count - 1);
 
-      console.log(aCard.card + ": " + score);
-
       for (let l = 0; l < aCard.count; l++)
         for (let k = 1; k <= count; k++) {
           let ci = aCard.card + k;
