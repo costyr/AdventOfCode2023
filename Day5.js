@@ -16,15 +16,13 @@ function TransformSeeds(aSeeds, aTransformMap, transformOrder) {
         let maxValue = (oo[1] + oo[2]);
         if (nr >= oo[1] && nr < maxValue)
         {
-          let ll = (nr - oo[1]);
-          if (ll < oo[2]) {
-            let bb = oo[0] + ll;
+          let offset = (nr - oo[1]);
+          let bb = oo[0] + offset;
 
-            console.log(transformOrder[i] + ": " + nr + " => " + bb);
-            nr = bb;
-            found = true;         
-            break; 
-          }
+          console.log(transformOrder[i] + ": " + nr + " => " + bb);
+          nr = bb;
+          found = true;         
+          break; 
         }  
       }
       if (!found)
@@ -57,31 +55,28 @@ function TransformInterval(aSeedStart, aSeedEnd, aTransformMap, transformOrder) 
     {
       let oo = tt[j];
       let maxValue = (oo[1] + oo[2]);
-      if (start >= oo[1] && end < maxValue)
+      let maxEnd = start + end;
+      if (start >= oo[1] && maxEnd < maxValue)
       {
-        let ll = (nr - oo[1]);
-        if (ll < oo[2]) {
-          let bb = oo[0] + ll;
-
-          console.log(transformOrder[i] + ": " + nr + " => " + bb);
-          nr = bb;
-          found = true;         
-          break; 
-        }
+        let offset = (start - oo[1]);
+        let newStart = oo[0] + offset;
+          
+        console.log(transformOrder[i] + ": [" + start + "," + end + "] => " + "[" + newStart + "," + end + "]");
+        start = newStart;
+        found = true;         
+        break; 
       }  
     }
     if (!found)
-      console.log(transformOrder[i] + ": " + nr + " => " + nr);
+      console.log(transformOrder[i] + ": [" + start + "," + end + "] => " + "[" + start + "," + end + "]");
   }
-
-  return nr;
 }
 
 let transformOrder = [];
 
 let seeds = [];
 let transformMap = new Map();
-util.MapInput("./Day5Input.txt", (aElem, aIndex) => {
+util.MapInput("./Day5TestInput.txt", (aElem, aIndex) => {
   if (aIndex == 0)
   {
     seeds = aElem.split(" ").map((aElem, aIndex)=>{ 
@@ -116,3 +111,5 @@ console.log(transformMap);
 console.log(transformOrder);
 
 console.log(TransformSeeds(seeds, transformMap, transformOrder));
+
+TransformInterval(79, 14, transformMap, transformOrder);
