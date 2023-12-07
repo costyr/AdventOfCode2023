@@ -59,6 +59,7 @@ function TransformInterval(aSeedStart, aSeedEnd, aTransformMap, aTransformOrder,
   let tt = aTransformMap.get(aTransformOrder[aTransform]);
 
   let found = false;
+  let jj = [];
   for (let j = 0; j < tt.length; j++) {
     let oo = tt[j];
     let maxValue = (oo[1] + oo[2]);
@@ -69,10 +70,15 @@ function TransformInterval(aSeedStart, aSeedEnd, aTransformMap, aTransformOrder,
 
       console.log(transformOrder[aTransform] + ": [" + start + "," + end + "] => " + "[" + newStart + "," + end + "]");
       found = true;
+      jj.push(oo[1] + offset);
+      jj.push(oo[1] + offset + end - 1);
       TransformInterval(newStart, end, aTransformMap, aTransformOrder, aTransform + 1, aMin);
+      end = 0;
       break;
     }
     else if (oo[1] >= start && maxValue < maxEnd) {
+      jj.push(oo[1]);
+      jj.push(oo[1] + oo[2] - 1);
       TransformInterval(oo[0], oo[2], aTransformMap, aTransformOrder, aTransform + 1, aMin);
       found = true;
     }
@@ -83,22 +89,40 @@ function TransformInterval(aSeedStart, aSeedEnd, aTransformMap, aTransformOrder,
       let newEnd = maxValue - start;
       console.log(transformOrder[aTransform] + ": [" + start + "," + newEnd + "] => " + "[" + newStart + "," + newEnd + "]");
       found = true;
+      jj.push(oo[1] + offset);
+      jj.push(oo[1] + offset + newEnd - 1);
       TransformInterval(newStart, newEnd, aTransformMap, aTransformOrder, aTransform + 1, aMin);
     }
     else if (maxEnd >= oo[1] && maxEnd < maxValue) {
       let newStart = oo[0];
 
       let newEnd = maxEnd - oo[1];
-      end -= newEnd;
 
       console.log(transformOrder[aTransform] + ": [" + oo[1] + "," + newEnd + "] => " + "[" + newStart + "," + newEnd + "]");
       found = true;
+      jj.push(oo[1]);
+      jj.push(oo[1] + newEnd - 1);
       TransformInterval(newStart, newEnd, aTransformMap, aTransformOrder, aTransform + 1, aMin);
     }
   }
   if (!found) {
     console.log(transformOrder[aTransform] + ": [" + start + "," + end + "] => " + "[" + start + "," + end + "]");
     TransformInterval(aSeedStart, aSeedEnd, aTransformMap, aTransformOrder, aTransform + 1, aMin);
+  }
+  else
+  {
+    jj.sort((a, b)=>{return a - b;});
+    jj.unshift(aSeedStart);
+    jj.push(aSeedStart + aSeedEnd - 1);
+    console.log(jj);
+    for (let i = 0; i < jj.length; i += 2)
+    {
+      let s = jj[i];
+      let e = jj[i + 1];
+
+      if ( e > s)
+        TransformInterval(s, e - s + 1, aTransformMap, aTransformOrder, aTransform + 1, aMin);
+    }
   }
 }
 
@@ -113,7 +137,7 @@ let transformOrder = [];
 
 let seeds = [];
 let transformMap = new Map();
-util.MapInput("./Day5Input.txt", (aElem, aIndex) => {
+util.MapInput("./Day5TestInput.txt", (aElem, aIndex) => {
   if (aIndex == 0) {
     seeds = aElem.split(" ").map((aElem, aIndex) => {
       if (aIndex == 0)
