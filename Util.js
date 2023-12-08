@@ -155,6 +155,16 @@ function ArrangementsN(aArray, aK) {
   return cc;
 }
 
+function GCD(x, y) {
+  return !y ? x : GCD(y, x % y);
+}
+
+function LCM(...arr) {
+  return [...arr].reduce((x, y) =>{ 
+    return (x * y) / GCD(x, y);
+  });
+}
+
 module.exports = {
   ComputeMapFilePath,
   CopyObject,
@@ -168,5 +178,7 @@ module.exports = {
   IntersectMaps,
   IntersectArrays,
   CombinationN,
-  ArrangementsN
+  ArrangementsN,
+  GCD,
+  LCM
 }
