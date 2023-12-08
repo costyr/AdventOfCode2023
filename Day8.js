@@ -61,7 +61,7 @@ function FindZZZ(aStarts, aEnd2, aInsts, aDirsMap) {
 let insts = "";
 let dirsMap = new Map();
 
-util.MapInput("./Day8TestInput2.txt", (aElem, aIndex) => {
+util.MapInput("./Day8Input.txt", (aElem, aIndex) => {
   if (aIndex == 0)
     insts = aElem;
   else if (aIndex == 1)
@@ -102,4 +102,4 @@ const lcm = (...arr) => {
   return [...arr].reduce((a, b) => _lcm(a, b));
 };
 
-console.log(lcm(vv));
+console.log(lcm(...vv));
