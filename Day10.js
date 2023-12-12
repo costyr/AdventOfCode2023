@@ -1,4 +1,5 @@
 const util = require('./Util.js');
+const matrix = require('./Matrix.js');
 
 const kNeighbours = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 const kDirMap = new Map();
@@ -22,6 +23,10 @@ function IsValidDirection(aPos, aDir, aMap) {
   let y = aDir[1];
   
   let dir = aMap[y][x];
+  let oo = aMap[aPos[1]][aPos[0]];
+
+  if (dir == '.')
+    return false;
 
   if (dir == 'S')
     return true;
@@ -142,21 +147,89 @@ function IsInLoop(aPos, aLoop, aMap) {
   return true; 
 }
 
-function FindEnclosed(aLoop, aMap) {
+function FindEnclosed(aLoop, aMap, aEnclosed) {
   let count = 0;
   for (let y = 0; y < aMap.length; y++)
     for (let x = 0; x < aMap[y].length; x++)
-      if (IsInLoop([x, y], aLoop, aMap))
+      if (IsInLoop([x, y], aLoop, aMap)) {
         count++;
+        aEnclosed.push([x, y]);
+      }
 
   return count;
 }
 
-let map = util.MapInput("./Day10TestInput4.txt", (aElem) => {
+function PrintLoop(aLoop, aEnclosed, aMap) {
+  let map = util.CopyObject(aMap);
+
+  for (let y = 0; y < map.length; y++)
+    for (let x = 0; x < map[y].length; x++)
+    {
+      let ll = aLoop.find((aElem)=>{ return aElem[0] == x && aElem[1] == y; });
+      if (ll === undefined) {
+        map[y][x] = '.';
+      let ee = aEnclosed.find((aElem)=>{ return aElem[0] == x && aElem[1] == y; });
+      if (ee === undefined)
+        map[y][x] = '0';
+      else
+        map[y][x] = 'X';
+      }
+    }
+
+  let mm = matrix.CreateMatrix(map);
+  mm.Print("");
+  return map;
+}
+
+function InflateMap(aX, aY, aMap) {
+
+  for (let y = 0; y < aMap.length; y++)
+  {
+    let ss = '.';
+    if (IsValidDirection([aX, y], [aX + 1, y], aMap) && 
+        IsValidDirection([aX + 1, y], [aX, y], aMap))
+      ss = '-';
+
+    aMap[y].splice(aX + 1, 0, ss);
+  }
+
+  let newLine = [];
+  for (let x = 0; x < aMap[0].length; x++)
+  {
+    let ss = '.';
+    if (IsValidDirection([x, aY], [x, aY + 1], aMap) && 
+        IsValidDirection([x, aY + 1], [x, aY], aMap))
+      ss = '|';
+
+    newLine[x] = ss;
+  }
+  
+  aMap.splice(aY + 1, 0, newLine);
+
+  let mm = matrix.CreateMatrix(aMap);
+  mm.Print("");
+}
+
+function DeflateMap(aX, aY, aMap) {
+  for (let y = 0; y < aMap.length; y++)
+    aMap[y].splice(aX, 1);
+  
+  aMap.splice(aY, 1);
+
+  let mm = matrix.CreateMatrix(aMap);
+  mm.Print("");      
+}
+
+let map = util.MapInput("./Day10Input.txt", (aElem) => {
   return aElem.split("");
 }, "\r\n");
 
 console.log(map);
+
+let kk = Math.min(map.length, map[0].length);
+
+for (let i = 0; i < kk - 1; i++)
+  InflateMap(i + i, i + i, map);
 
 let start = FindStart(map);
 
@@ -167,4 +240,18 @@ let loop = FindLoop(start, map);
 console.log(loop.max);
 console.log(loop.path);
 
-console.log(FindEnclosed(loop.path, map));
+let enclosed = [];
+console.log(FindEnclosed(loop.path, map, enclosed));
+
+let oo = PrintLoop(loop.path, enclosed, map);
+
+for (let i = 1; i < kk; i++)
+  DeflateMap(i, i, oo);
+
+let count = 0;
+for (let y = 0; y < oo.length; y++)
+  for (let x = 0; x < oo[y].length; x++)
+    if (oo[y][x] == 'X')
+      count ++;
+
+console.log(count);
