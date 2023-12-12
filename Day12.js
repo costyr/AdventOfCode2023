@@ -25,6 +25,9 @@ function CountTemplate(aComb) {
       }
     }
 
+  if (isSpring)
+    cc.push(count);  
+
   return cc;
 }
 
@@ -49,24 +52,40 @@ function MapCounts(aExpanded) {
   return countMap;
 }
 
-function GenerateAll(aTemplate, aExpanded) {
+function GenerateAll(aTemplate, aIndex, aExpanded) {
+
+  //console.log(aExpanded.length);
 
   let count = 0;
-  for (let i = 0; i < aTemplate.length; i++)
+  for (let i = aIndex; i < aTemplate.length; i++)
     if (aTemplate[i] == '?')
     {
-      let t1 = util.CopyObject(aTemplate);
+      let t1 = aTemplate.slice();
       t1[i] = '#';
-      GenerateAll(t1, aExpanded);
+      GenerateAll(t1, i + 1, aExpanded);
       
-      let t2 = util.CopyObject(aTemplate);
+      let t2 = aTemplate.slice();
       t2[i] = '.';
-      GenerateAll(t2, aExpanded);
+      GenerateAll(t2, i + 1, aExpanded);
       count ++;
     }
 
-  if (count == 0)
-    aExpanded.push(aTemplate);
+  if (count == 0) {
+
+    let existing = aExpanded.find((aElem)=>{
+
+      if (aElem.length != aTemplate.length)
+        return false;
+
+      for (let i = 0; i < aElem.length; i++)
+        if (aElem[i] != aTemplate[i])
+          return false;    
+      return true;
+    });
+
+    if (existing === undefined)
+      aExpanded.push(aTemplate);
+  }
 
   return;
 }
@@ -77,15 +96,19 @@ function ComputeSum(aSpringMap) {
   for (let i = 0; i < aSpringMap.length; i++)
   {
     let ee = [];
-    GenerateAll(aSpringMap[i].t, ee);
+    GenerateAll(aSpringMap[i].t, 0, ee);
 
     let ssMap = MapCounts(ee);
 
-    console.log(ssMap);
+    //console.log(ssMap);
 
     let key = aSpringMap[i].o.toString();
 
-    sum += ssMap.get(key);
+    let pp = ssMap.get(key);
+
+    console.log(springMap[i].t + " " + springMap[i].o + " => " + pp);
+
+    sum += pp;
   }
 
   return sum;
@@ -98,6 +121,13 @@ let springMap = util.MapInput("./Day12TestInput.txt", (aElem) => {
 
 }, "\r\n");
 
-console.log(springMap);
+//console.log(springMap);
 
-console.log(ComputeSum(springMap));
+//console.log(ComputeSum(springMap));
+
+//console.log(util.ArrangementsN(['.', '#'], 2));
+
+let ee = [];
+GenerateAll(['.', '?', '?', '?','#', '?', '?', '.','?', '#', '#', '?','#', '?', '?', '?'], 0, ee);
+
+console.log(ee);
