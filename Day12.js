@@ -68,6 +68,7 @@ function GenerateAll(aTemplate, aIndex, aExpanded) {
       t2[i] = '.';
       GenerateAll(t2, i + 1, aExpanded);
       count ++;
+      break;
     }
 
   if (count == 0) {
@@ -123,11 +124,11 @@ let springMap = util.MapInput("./Day12TestInput.txt", (aElem) => {
 
 //console.log(springMap);
 
-//console.log(ComputeSum(springMap));
+console.log(ComputeSum(springMap));
 
 //console.log(util.ArrangementsN(['.', '#'], 2));
 
-let ee = [];
-GenerateAll(['.', '?', '?', '?','#', '?', '?', '.','?', '#', '#', '?','#', '?', '?', '?'], 0, ee);
+//let ee = [];
+//GenerateAll(['?', '?', '?', '.', '#', '#', '#'], 0, ee);
 
-console.log(ee);
+//console.log(ee);
