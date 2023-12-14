@@ -1,17 +1,6 @@
 const util = require('./Util.js');
 const matrix = require('./Matrix.js');
 
-function FindRocks(aRocksMap) {
-
-  let rocks = [];
-  for (let y = 0; y < aRocksMap.length; y++)
-    for (let x = 0; x < aRocksMap[y].length; x++)
-      if (aRocksMap[y][x] == 'O')
-        rocks.push([x, y]);
-
-  return rocks;
-}
-
 function PrintMap(aRocksMap) {
   let mm = matrix.CreateMatrix(aRocksMap);
 
@@ -21,59 +10,51 @@ function PrintMap(aRocksMap) {
 function MoveRocks(aRocksMap, aDir, aNoCopy) {
   let map = aNoCopy ? aRocksMap : util.CopyObject(aRocksMap);
 
-  
-  for (;;) {
 
-  let moved = false;
-  for (let y = 0; y < map.length; y++)
-    for (let x = 0; x < map[y].length; x++)
-      if (map[y][x] == 'O')
-      {
-        if (aDir == 'N') {
-          let y0 = y - 1;
+  for (; ;) {
 
-          if (y0 >= 0 && map[y0][x] == '.')
-          {
-            map[y][x] = '.';
-            map[y0][x] = 'O';
-            moved = true;
+    let moved = false;
+    for (let y = 0; y < map.length; y++)
+      for (let x = 0; x < map[y].length; x++)
+        if (map[y][x] == 'O') {
+          if (aDir == 'N') {
+            let y0 = y - 1;
+
+            if (y0 >= 0 && map[y0][x] == '.') {
+              map[y][x] = '.';
+              map[y0][x] = 'O';
+              moved = true;
+            }
           }
-        } 
-        else if (aDir == 'S')
-        {
-          let y1 = y + 1;
+          else if (aDir == 'S') {
+            let y1 = y + 1;
 
-          if (y1 < map.length && map[y1][x] == '.')
-          {
-            map[y][x] = '.';
-            map[y1][x] = 'O';
-            moved = true;
+            if (y1 < map.length && map[y1][x] == '.') {
+              map[y][x] = '.';
+              map[y1][x] = 'O';
+              moved = true;
+            }
           }
-        }
-        else if (aDir == 'W')
-        {
-          let x0 = x - 1;
+          else if (aDir == 'W') {
+            let x0 = x - 1;
 
-          if (x0 >= 0 && map[y][x0] == '.')
-          {
-            map[y][x] = '.';
-            map[y][x0] = 'O';
-            moved = true;
+            if (x0 >= 0 && map[y][x0] == '.') {
+              map[y][x] = '.';
+              map[y][x0] = 'O';
+              moved = true;
+            }
           }
-        }
-        else if (aDir == 'E')
-        {
-          let x1 = x + 1;
+          else if (aDir == 'E') {
+            let x1 = x + 1;
 
-          if (x1 < map[0].length && map[y][x1] == '.')
-          {
-            map[y][x] = '.';
-            map[y][x1] = 'O';
-            moved = true;
+            if (x1 < map[0].length && map[y][x1] == '.') {
+              map[y][x] = '.';
+              map[y][x1] = 'O';
+              moved = true;
+            }
           }
         }
-      }
-        
+
 
     if (!moved)
       break;
@@ -83,11 +64,12 @@ function MoveRocks(aRocksMap, aDir, aNoCopy) {
 }
 
 
-function MoveCircle(aRocksMap) {
+function SimulateNCircles(aCount, aRocksMap) {
   let map = util.CopyObject(aRocksMap);
 
-  let prev = 0;
-  for(i = 0; i < 1000000000; i++) {
+  let ff = new Map();
+
+  for (i = 0; i < aCount; i++) {
     MoveRocks(map, 'N', true);
     MoveRocks(map, 'W', true);
     MoveRocks(map, 'S', true);
@@ -95,17 +77,21 @@ function MoveCircle(aRocksMap) {
 
     let sum = CountLoad(map);
 
-    console.log(i + " " + sum);
+    let gg = ff.get(sum);
 
-    //if (prev == sum)
-    //  return sum;
+    if (gg === undefined)
+      ff.set(sum, { prev0: i, prev: i, freq: [] });
+    else {
 
-    prev = sum;
-
-    //PrintMap(map);
+      let nf = i - gg.prev;
+      if (gg.freq.indexOf(nf) == -1)
+        gg.freq.push(i - gg.prev);
+      gg.prev0 = gg.prev;
+      gg.prev = i;
+    }
   }
 
-  return 0;
+  return ff;
 }
 
 
@@ -113,26 +99,45 @@ function CountLoad(aRocksMap) {
 
   let sum = 0;
   for (let y = 0; y < aRocksMap.length; y++)
-  for (let x = 0; x < aRocksMap[y].length; x++)
-    if (aRocksMap[y][x] == 'O')
-      sum += aRocksMap.length - y;
-  
+    for (let x = 0; x < aRocksMap[y].length; x++)
+      if (aRocksMap[y][x] == 'O')
+        sum += aRocksMap.length - y;
+
   return sum;
 }
 
-let rocksMap = util.MapInput("./Day14TestInput.txt", (aElem) => {
- 
+function FindBig(aCicleCount, aFreqMap) {
+
+  let maxPrev = 0;
+  let lastKey = 0;
+  for (let [key, value] of aFreqMap) {
+    if (value.freq.length == 0)
+      continue;
+
+    if ((aCicleCount - value.prev - 1) % value.freq == 0) {
+      if (value.prev > maxPrev) {
+        maxPrev = value.prev;
+        lastKey = key;
+      }
+    }
+  }
+
+  return lastKey;
+}
+
+let rocksMap = util.MapInput("./Day14Input.txt", (aElem) => {
+
   return aElem.split("");
 
 }, "\r\n");
 
-console.log(rocksMap);
-
 let nn = MoveRocks(rocksMap, 'N', false);
 
-PrintMap(nn);
+let firstLoad = CountLoad(nn);
 
-console.log(CountLoad(nn));
+let freqMap = SimulateNCircles(1000, rocksMap);
 
-console.log(MoveCircle(rocksMap));
+console.log(freqMap);
 
+console.log(firstLoad);
+console.log(FindBig(1000000000, freqMap));
