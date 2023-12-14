@@ -91,6 +91,15 @@ function GenerateAll(aTemplate, aIndex, aExpanded) {
   return;
 }
 
+function Test1(aPattern) {
+  let ee = [];
+    GenerateAll(aPattern, 0, ee);
+
+    let ssMap = MapCounts(ee);
+
+    console.log(ssMap);
+}
+
 function ComputeSum(aSpringMap) {
 
   let sum = 0;
@@ -124,7 +133,9 @@ let springMap = util.MapInput("./Day12TestInput.txt", (aElem) => {
 
 //console.log(springMap);
 
-console.log(ComputeSum(springMap));
+//console.log(ComputeSum(springMap));
+
+Test1("##???????????".split(""));
 
 //console.log(util.ArrangementsN(['.', '#'], 2));
 
