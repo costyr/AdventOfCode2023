@@ -100,6 +100,83 @@ function Test1(aPattern) {
     console.log(ssMap);
 }
 
+function ComputeArrangements(aTemplate, aIndex, aIsSpring, aCount, aPattern, aTarget, aTotal) {
+
+  if (aPattern.length > 0)
+  {
+    for (let j = 0; j < Math.min(aPattern.length, aTarget.length); j++)
+      if (aPattern[j] != aTarget[j])
+        return;
+  }
+
+  if (aPattern.length > aTarget.length)
+    return;
+
+  for (let i = aIndex; i < aTemplate.length; i++)
+    if (aIsSpring) {
+      if (aTemplate[i] == '?')
+      {
+        let t1 = aTemplate.slice();
+        t1[i] = "#"; 
+        ComputeArrangements(t1, i + 1, true, aCount + 1, aPattern.slice(), aTarget, aTotal);
+      
+        let t2 = aTemplate.slice();
+        t2[i] = ".";
+        let pattern = aPattern.slice();
+        pattern.push(aCount);
+        ComputeArrangements(t2, i + 1, false, 0, pattern, aTarget, aTotal);
+        break;
+      }
+      else if (aTemplate[i] == '#')
+      {
+        aCount++;   
+      }
+      else 
+      {
+        aIsSpring = false;
+        aPattern.push(aCount);
+        aCount = 0;
+      }    
+  }
+  else
+  {
+    if (aTemplate[i] == '?')
+      {  
+        let t1 = aTemplate.slice();
+        t1[i] = "#";
+        ComputeArrangements(t1, i + 1, true, 1, aPattern.slice(), aTarget, aTotal);
+      
+        let t2 = aTemplate.slice();
+        t2[i] = ".";
+        ComputeArrangements(t2, i + 1, false, 0, aPattern.slice(), aTarget, aTotal);
+        break;
+      }
+      else if (aTemplate[i] == '#')
+      {
+        aCount++;   
+        aIsSpring = true;
+      }
+  }
+
+  if (aTemplate.indexOf('?') > 0)
+    return;
+  //if (aIndex >= aTemplate.length) {
+
+  if (aIsSpring)
+    aPattern.push(aCount);
+
+  if (aPattern.length != aTarget.length)
+    return;
+
+  for (let j = 0; j < aPattern.length; j++)
+    if (aPattern[j] != aTarget[j])
+      return;
+
+  console.log(aTemplate + " " + aIndex + " " + aPattern);
+  aTotal.total++;
+  //}
+}
+
 function ComputeSum(aSpringMap) {
 
   let sum = 0;
@@ -124,7 +201,36 @@ function ComputeSum(aSpringMap) {
   return sum;
 }
 
-let springMap = util.MapInput("./Day12TestInput.txt", (aElem) => {
+function ComputeSum2(aSpringMap) {
+
+  let sum = 0;
+  for (let i = 0; i < aSpringMap.length; i++)
+  {
+    let rr = { total: 0 };
+
+    let oo2 = [];
+    for (let j = 0; j < 5; j++)
+      oo2 = oo2.concat(aSpringMap[i].o);
+
+    let tt2 = [];
+    for (let j = 0; j < 5; j++)
+    {
+      if (j > 0)
+        tt2.push('?');
+      tt2 = tt2.concat(aSpringMap[i].t);
+    }
+
+    ComputeArrangements(tt2, 0, false, 0, [], oo2, rr);
+
+    console.log(tt2 + " " + oo2 + " => " + rr.total);
+
+    sum += rr.total;
+  }
+
+  return sum;
+}
+
+let springMap = util.MapInput("./Day12Input.txt", (aElem) => {
   let line = aElem.split(" ");
 
   return { t: line[0].split(""), o: line[1].split(",").map((aElem)=>{ return parseInt(aElem);})};
@@ -133,13 +239,34 @@ let springMap = util.MapInput("./Day12TestInput.txt", (aElem) => {
 
 //console.log(springMap);
 
-//console.log(ComputeSum(springMap));
+//console.log(ComputeSum2(springMap));
 
-Test1("##???????????".split(""));
+//Test1("##???????????".split(""));
+//Test1("?###?????????".split(""));
 
 //console.log(util.ArrangementsN(['.', '#'], 2));
 
 //let ee = [];
-//GenerateAll(['?', '?', '?', '.', '#', '#', '#'], 0, ee);
+//let rr = { total: 0 };
+//ComputeArrangements("?###????????".split(""), 0, false, 0, [], [3, 2, 1], rr);
+
+//console.log(rr);
 
 //console.log(ee);
+
+//console.log(['?', '?', '?', '.', '#', '#', '#'].toString());
+
+let rr = { total: 0 };
+ComputeArrangements("?????????##???????????????##???????????????##???????????????##?????".split(""), 0, false, 0, [], [1, 9, 1, 1, 9, 1, 1, 9, 1, 1, 9, 1], rr);
+
+console.log(rr);
+
+let rr1 = { total: 0 };
+//ComputeArrangements("??????????##?????".split(""), 0, false, 0, [], [1, 9, 1], rr1);
+
+console.log(rr1);
+
+let rr2 = { total: 0 };
+//ComputeArrangements("?????????##??????".split(""), 0, false, 0, [], [1, 9, 1], rr2);
+
+console.log(rr2);
