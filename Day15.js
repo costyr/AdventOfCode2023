@@ -13,7 +13,6 @@ function ComputeSum(aCodes) {
 
   let total = aCodes.reduce((aTotal, aElem) => {
     let sum = ComputeHash(aElem);
-    console.log(sum);
 
     return aTotal + sum;
   }, 0);
@@ -77,21 +76,16 @@ function ComputeFocusingPower(aCodes) {
         let dd = (i + 1) * (j + 1) * box[j].f;
 
         total += dd;
-
-        console.log(i + " " + j + " " + dd);
       }
     }
   }
 
-  console.log(boxes);
   return total;
 }
 
 let codes = util.MapInput("./Day15Input.txt", (aElem) => {
   return aElem.split("");
 }, ",");
-
-console.log(codes);
 
 console.log(ComputeSum(codes));
 
