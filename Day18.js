@@ -95,6 +95,8 @@ function ComputeWalls(aWalls) {
           area -= ooo;
           tt.push(ooo);
           }
+          else
+            return "^";
       }
     }
 
@@ -151,7 +153,7 @@ function IsInner(aX, aY, aMinX, aMaxX, aMinY, aMaxY, aWallPoints, aOuterPoints) 
     visited.push(pos);
   }
 
-  console.log(aX + " " + aY + " " + (visited.length + aWallPoints.length));
+  console.log(aX + " " + aY + " area: " + (visited.length + aWallPoints.length));
 
   return true;
 }
@@ -175,68 +177,44 @@ function PrintMap(aMinX, aMaxX, aMinY, aMaxY, aPoints) {
 
 function ComputeArea(aWalls) {
 
-  let x = 1;
-  let y = 1;
+  let x = 0;
+  let y = 0;
 
   let vertices = [];
 
-  //vertices.push([0, 0]);
-
+  let kk = 0
   for (let i = 0; i < aWalls.length; i++) {
     let ww = aWalls[i];
 
-    if (ww.d == 'R') {
-      x += ww.count;
+    if (ww.d2 == 0) {
+      x += ww.count2;
     }
-    else if (ww.d == 'L') {
-      x -= ww.count;
+    else if (ww.d2 == 2) {
+      x -= ww.count2;
     }
-    else if (ww.d == 'D') {
-      y += ww.count;
+    else if (ww.d2 == 1) {
+      y += ww.count2;
     }
     else {
-      y -= ww.count;
+      y -= ww.count2;
     }
 
+    kk += ww.count2;
     vertices.push([x, y]);      
   }
 
-  /*vertices.sort((a, b) => {
-    if (a[1] == b[1])
-      return a[0] - b[0];
-
-    return a[1] - b[1];
-  });*/
-
   let p1 = 0;
-  let p2 = 0;
   let j = vertices.length - 1;
   for (let i = 0; i < vertices.length; i++)
   {
-    /*let ll = vertices[i + 1][1] - vertices[i][1];
-
-    let maxX = Math.max(vertices[i + 1][0], vertices[i][0]);
-    
-    let minX = Math.min(vertices[i + 1][0], vertices[i][0]);
-
-    if (ll == 0)
-      continue;
-
-    let yy = Math.abs(ll + 1) * (Math.abs(maxX - minX) + 1);
-    
-    console.log(yy + " "  + vertices[i][1] + " " + vertices[i + 1][1] + " " + minX + " " + maxX);
-    p1 += yy;*/   
-
-    p1 += (vertices[j][0] + vertices[i][0]) * (vertices[j][1] - vertices[i][1]);
+    p1 += (vertices[j][1] + vertices[i][1]) * (vertices[j][0] - vertices[i][0]);
     j = i;
   }
 
-  console.log(vertices);
-
-  return p1 / 2;
+  return p1 / 2 + kk / 2 + 1;
 }
 
-let walls = util.MapInput("./Day18TestInput.txt", (aElem) => {
+let walls = util.MapInput("./Day18Input.txt", (aElem) => {
   let ww = aElem.split(" ");
 
   let cc = ww[2].substr(1, ww[2].length - 2);
@@ -246,6 +224,6 @@ let walls = util.MapInput("./Day18TestInput.txt", (aElem) => {
 
 console.log(walls);
 
-//console.log(ComputeWalls(walls));
+console.log(ComputeWalls(walls));
 
 console.log(ComputeArea(walls));
