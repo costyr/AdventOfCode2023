@@ -21,6 +21,18 @@ class Graph {
   GetGraph() {
     return this.mGraph;
   }
+
+  EndNodeReached(aCurrentNode, aEndNodeId) {
+    return aCurrentNode == aEndNodeId;
+  }
+
+  SetVisited(aState, aNode) {
+    return aState.SetVisited(aNode);
+  }
+
+  IsVisited(aState, aNode) {
+    return aState.IsVisited(aNode);
+  }
 }
 
 class PriorityQueue {
@@ -29,6 +41,7 @@ class PriorityQueue {
     if (aStatNode != undefined)
       this.mQueue.push(aStatNode);
     this.mSortFunc = null;
+    this.mQueueMap = new Map();
   }
 
   SetSortFunc(aSortFunc) {
@@ -36,22 +49,17 @@ class PriorityQueue {
   }
 
   Pop() {
-    return this.mQueue.shift();
+    let top = this.mQueue.shift();
+    this.mQueueMap.delete(top);
+    return top;
   }
 
   Push(aNode) {
-    let found = false;
-    for (let i = 0; i < this.mQueue.length; i++)
-      if (JSON.stringify(aNode) == JSON.stringify(this.mQueue[i])) {
-        found = true;
-        break;
-      }
+    if (this.mQueueMap.get(aNode) !== undefined)
+      return;
 
-    if (!found) {
-      this.mQueue.push(aNode);
-
-      this.Sort();
-    }
+    this.mQueue.push(aNode);
+    this.mQueueMap.set(aNode, 1);
   }
 
   Sort() {
@@ -66,19 +74,8 @@ class PriorityQueue {
 
 class NodeState {
   constructor() {
-    this.mState = [];
-    this.mSize = 0;
+    this.mState = new Map();
   }
-
-  GetVisitedCount() {
-    let count = 0;
-    for (let state in this.mState)
-      if (this.mState[state].visited)
-        count++;
-
-    return count;
-  }
-
 
   GetId(aNode) {
     return JSON.stringify(aNode);
@@ -86,32 +83,31 @@ class NodeState {
 
   InitState(aNodeId) {
 
-    if (this.mState[aNodeId] == undefined) {
-      this.mState[aNodeId] = { visited: false, dist: Number.MAX_SAFE_INTEGER };
-      this.mSize++;
+    if (this.mState.get(aNodeId) == undefined) {
+      this.mState.set(aNodeId, { visited: false, dist: Number.MAX_SAFE_INTEGER });
     }
   }
 
   SetDist(aNodeId, aDist) {
     this.InitState(aNodeId);
-    this.mState[aNodeId].dist = aDist;
+    this.mState.get(aNodeId).dist = aDist;
   }
 
   GetDist(aNodeId) {
-    if (this.mState[aNodeId] == undefined)
+    if (this.mState.get(aNodeId) == undefined)
       return Number.MAX_SAFE_INTEGER;
-    return this.mState[aNodeId].dist;
+    return this.mState.get(aNodeId).dist;
   }
 
   SetVisited(aNodeId) {
     this.InitState(aNodeId);
-    this.mState[aNodeId].visited = true;
+    this.mState.get(aNodeId).visited = true;
   }
 
   IsVisited(aNodeId) {
-    if (this.mState[aNodeId] == undefined)
+    if (this.mState.get(aNodeId) == undefined)
       return false;
-    return this.mState[aNodeId].visited;
+    return this.mState.get(aNodeId).visited;
   }
 }
 
@@ -174,14 +170,52 @@ class Dijkstra {
   EndNodeReached(aCurrentNode, aEndNodeId) {
     if (this.mStateExtra != undefined)
       return this.mStateExtra.EndNodeReached(aCurrentNode, aEndNodeId);
+    else if (this.mGraph.EndNodeReached != undefined)
+      return this.mGraph.EndNodeReached(aCurrentNode, aEndNodeId);
 
     return aCurrentNode == aEndNodeId;
+  }
+
+  SetVisited(aState, aNode) {
+
+    if (this.mGraph.SetVisited !== undefined)
+      return this.mGraph.SetVisited(aState, aNode);
+
+    return aState.SetVisited(aNode);
+  }
+
+  IsVisited(aState, aNode) {
+
+    if (this.mGraph.IsVisited !== undefined)
+      return this.mGraph.IsVisited(aState, aNode);
+
+    return aState.IsVisited(aNode);
   }
 
   IsValidNeighbour(aCurrentNode, aNeighbourId) {
     if (this.mStateExtra != undefined)
       return this.mStateExtra.IsValidNeighbour(aCurrentNode, aNeighbourId);
     return true;
+  }
+
+  ComputePath(aStart, aEnd, aPath) {
+    let startNodeStateId = this.ComputeStateId(aStart);
+    let endNodeStateId = this.ComputeStateId(aEnd);
+
+    let goodPath = [];
+    let next = endNodeStateId;
+    while (1) {
+      goodPath.unshift(next);
+
+      if (next == startNodeStateId)
+        break;
+      next = aPath[next];
+
+      if (next === undefined)
+        return [];
+    }
+
+    return goodPath;
   }
 
   FindShortestPath(aStart, aEnd) {
@@ -208,6 +242,7 @@ class Dijkstra {
 
       if (this.EndNodeReached(currentNode, aEnd)) {
         endReached = true;
+        aEnd = currentNode;
         break;
       }
 
@@ -222,7 +257,7 @@ class Dijkstra {
 
           let neighbourStateId = this.ComputeStateId(currentNode, neighbour.id);
 
-          if (state.IsVisited(neighbourStateId))
+          if (this.IsVisited(state, neighbourStateId))
             continue;
 
           let estimateDist = currentDist + neighbour.cost;
@@ -235,25 +270,16 @@ class Dijkstra {
         }
       }
 
-      state.SetVisited(currentNodeStateId);
+      this.SetVisited(state, currentNodeStateId);
+      queue.Sort();
     }
 
     if (!endReached)
       return { dist: 0, path: [] };
 
-    let startNodeStateId = this.ComputeStateId(aStart);
+    let goodPath = this.ComputePath(aStart, aEnd, path);
+
     let endNodeStateId = this.ComputeStateId(aEnd);
-
-    let goodPath = [];
-    let next = endNodeStateId;
-    while (1) {
-      goodPath.unshift(next);
-
-      if (next == startNodeStateId)
-        break;
-      next = path[next];
-    }
-
     return { dist: state.GetDist(endNodeStateId), path: goodPath };
   }
 }
