@@ -88,15 +88,15 @@ function ComputeWalls(aWalls) {
       let ooo = hh[j + 1] - hh[j] - 1;
 
       if (ooo > 0) {
-        
-          let isOuter = !IsInner(hh[j] + 1, key, minX, maxX, minY, maxY, pp, outer);
 
-          if (isOuter) {
+        let isOuter = !IsInner(hh[j] + 1, key, minX, maxX, minY, maxY, pp, outer);
+
+        if (isOuter) {
           area -= ooo;
           tt.push(ooo);
-          }
-          else
-            return "^";
+        }
+        else
+          return "^";
       }
     }
 
@@ -115,7 +115,7 @@ function FindNeighbourhood(aX, aY, aMinX, aMaxX, aMinY, aMaxY) {
     let y = aY + kNeighbours[i][1];
 
     if (x >= aMinX && x <= aMaxX &&
-        y >= aMinY && y <= aMaxY)
+      y >= aMinY && y <= aMaxY)
       nn.push([x, y]);
     else
       nn.push([-10000, -10000]);
@@ -144,7 +144,7 @@ function IsInner(aX, aY, aMinX, aMaxX, aMinY, aMaxY, aWallPoints, aOuterPoints) 
       else if (aOuterPoints.find((aElem) => { return aElem[0] == vv[0] && aElem[1] == vv[1]; }) !== undefined)
         return false;
       else if (visited.find((aElem) => { return aElem[0] == vv[0] && aElem[1] == vv[1]; }) === undefined &&
-               aWallPoints.find((aElem) => { return aElem[0] == vv[0] && aElem[1] == vv[1]; }) === undefined) {
+        aWallPoints.find((aElem) => { return aElem[0] == vv[0] && aElem[1] == vv[1]; }) === undefined) {
         if (queue.find((aElem) => { return aElem[0] == vv[0] && aElem[1] == vv[1]; }) === undefined)
           queue.push(vv);
       }
@@ -200,13 +200,12 @@ function ComputeArea(aWalls) {
     }
 
     kk += ww.count2;
-    vertices.push([x, y]);      
+    vertices.push([x, y]);
   }
 
   let p1 = 0;
   let j = vertices.length - 1;
-  for (let i = 0; i < vertices.length; i++)
-  {
+  for (let i = 0; i < vertices.length; i++) {
     p1 += (vertices[j][1] + vertices[i][1]) * (vertices[j][0] - vertices[i][0]);
     j = i;
   }
@@ -219,7 +218,7 @@ let walls = util.MapInput("./Day18Input.txt", (aElem) => {
 
   let cc = ww[2].substr(1, ww[2].length - 2);
 
-  return { d: ww[0], count: parseInt(ww[1]), count2: parseInt(cc.substr(1, cc.length - 2), 16), d2:  parseInt(cc[cc.length - 1]) };
+  return { d: ww[0], count: parseInt(ww[1]), count2: parseInt(cc.substr(1, cc.length - 2), 16), d2: parseInt(cc[cc.length - 1]) };
 }, "\r\n");
 
 console.log(walls);
