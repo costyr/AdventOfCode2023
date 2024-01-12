@@ -10,15 +10,13 @@ function CountTemplate(aComb) {
 
       if (aComb[i] == '#')
         count++;
-      else
-      {
+      else {
         isSpring = false;
         cc.push(count);
         count = 0;
       }
     }
-    else
-    {
+    else {
       if (aComb[i] == '#') {
         count++;
         isSpring = true;
@@ -26,7 +24,7 @@ function CountTemplate(aComb) {
     }
 
   if (isSpring)
-    cc.push(count);  
+    cc.push(count);
 
   return cc;
 }
@@ -34,21 +32,19 @@ function CountTemplate(aComb) {
 function MapCounts(aExpanded) {
 
   let countMap = new Map();
-  for (let i = 0; i < aExpanded.length; i++)
-  {
+  for (let i = 0; i < aExpanded.length; i++) {
     let tt = CountTemplate(aExpanded[i]);
 
     let key = tt.toString();
 
     let cc = countMap.get(key);
-    if (cc != undefined)
-    {
+    if (cc != undefined) {
       countMap.set(key, cc + 1);
     }
     else
       countMap.set(key, 1);
   }
-  
+
   return countMap;
 }
 
@@ -58,29 +54,28 @@ function GenerateAll(aTemplate, aIndex, aExpanded) {
 
   let count = 0;
   for (let i = aIndex; i < aTemplate.length; i++)
-    if (aTemplate[i] == '?')
-    {
+    if (aTemplate[i] == '?') {
       let t1 = aTemplate.slice();
       t1[i] = '#';
       GenerateAll(t1, i + 1, aExpanded);
-      
+
       let t2 = aTemplate.slice();
       t2[i] = '.';
       GenerateAll(t2, i + 1, aExpanded);
-      count ++;
+      count++;
       break;
     }
 
   if (count == 0) {
 
-    let existing = aExpanded.find((aElem)=>{
+    let existing = aExpanded.find((aElem) => {
 
       if (aElem.length != aTemplate.length)
         return false;
 
       for (let i = 0; i < aElem.length; i++)
         if (aElem[i] != aTemplate[i])
-          return false;    
+          return false;
       return true;
     });
 
@@ -93,17 +88,16 @@ function GenerateAll(aTemplate, aIndex, aExpanded) {
 
 function Test1(aPattern) {
   let ee = [];
-    GenerateAll(aPattern, 0, ee);
+  GenerateAll(aPattern, 0, ee);
 
-    let ssMap = MapCounts(ee);
+  let ssMap = MapCounts(ee);
 
-    console.log(ssMap);
+  console.log(ssMap);
 }
 
 function ComputeArrangements(aTemplate, aIndex, aIsSpring, aCount, aPattern, aTarget, aTotal) {
 
-  if (aPattern.length > 0)
-  {
+  if (aPattern.length > 0) {
     for (let j = 0; j < Math.min(aPattern.length, aTarget.length); j++)
       if (aPattern[j] != aTarget[j])
         return;
@@ -116,7 +110,7 @@ function ComputeArrangements(aTemplate, aIndex, aIsSpring, aCount, aPattern, aTa
   for (let i = aPattern.length; i < aTarget.length; i++) {
     rrr += aTarget[i];
     if (i < aTarget.length - 1)
-      rrr ++;
+      rrr++;
   }
 
   if (aIsSpring)
@@ -130,18 +124,17 @@ function ComputeArrangements(aTemplate, aIndex, aIsSpring, aCount, aPattern, aTa
   if ((aPattern.length < aTarget.length) && (aCount > aTarget[aPattern.length]))
     return;
 
-  console.log(aTemplate.slice(0, aIndex).toString().replaceAll(/,/g, "") + " " + aTemplate.slice(aIndex).toString().replaceAll(/,/g, "") + "    [" + aPattern + "] [" + aTarget + "]");
+  //console.log(aTemplate.slice(0, aIndex).toString().replaceAll(/,/g, "") + " " + aTemplate.slice(aIndex).toString().replaceAll(/,/g, "") + "    [" + aPattern + "] [" + aTarget + "]");
 
   //console.log(aTemplate.toString().replaceAll(/,/g, "") + " " + aPattern + " " + (aTemplate.length - aIndex));
 
   for (let i = aIndex; i < aTemplate.length; i++)
     if (aIsSpring) {
-      if (aTemplate[i] == '?')
-      {
+      if (aTemplate[i] == '?') {
         let t1 = aTemplate.slice();
-        t1[i] = "#"; 
+        t1[i] = "#";
         ComputeArrangements(t1, i + 1, true, aCount + 1, aPattern.slice(), aTarget, aTotal);
-      
+
         let t2 = aTemplate.slice();
         t2[i] = ".";
         let pattern = aPattern.slice();
@@ -149,36 +142,31 @@ function ComputeArrangements(aTemplate, aIndex, aIsSpring, aCount, aPattern, aTa
         ComputeArrangements(t2, i + 1, false, 0, pattern, aTarget, aTotal);
         break;
       }
-      else if (aTemplate[i] == '#')
-      {
-        aCount++;   
+      else if (aTemplate[i] == '#') {
+        aCount++;
       }
-      else 
-      {
+      else {
         aIsSpring = false;
         aPattern.push(aCount);
         aCount = 0;
-      }    
-  }
-  else
-  {
-    if (aTemplate[i] == '?')
-      {  
+      }
+    }
+    else {
+      if (aTemplate[i] == '?') {
         let t1 = aTemplate.slice();
         t1[i] = "#";
         ComputeArrangements(t1, i + 1, true, 1, aPattern.slice(), aTarget, aTotal);
-      
+
         let t2 = aTemplate.slice();
         t2[i] = ".";
         ComputeArrangements(t2, i + 1, false, 0, aPattern.slice(), aTarget, aTotal);
         break;
       }
-      else if (aTemplate[i] == '#')
-      {
-        aCount++;   
+      else if (aTemplate[i] == '#') {
+        aCount++;
         aIsSpring = true;
       }
-  }
+    }
 
   if (aTemplate.indexOf('?') > 0)
     return;
@@ -199,8 +187,7 @@ function ComputeArrangements(aTemplate, aIndex, aIsSpring, aCount, aPattern, aTa
 function ComputeSum(aSpringMap) {
 
   let sum = 0;
-  for (let i = 0; i < aSpringMap.length; i++)
-  {
+  for (let i = 0; i < aSpringMap.length; i++) {
     let ee = [];
     GenerateAll(aSpringMap[i].t, 0, ee);
 
@@ -220,11 +207,27 @@ function ComputeSum(aSpringMap) {
   return sum;
 }
 
+function ComputeSum0(aSpringMap) {
+
+  let sum = 0;
+  for (let i = 0; i < aSpringMap.length; i++) {
+    let rr = { total: 0 };
+
+    let cache = new Map();
+    ComputeArrangements2(aSpringMap[i].t, 0, false, 0, aSpringMap[i].o, rr, cache);
+
+    console.log(aSpringMap[i].t.toString().replaceAll(/,/g, "") + " " + aSpringMap[i].o + " => " + rr.total);
+
+    sum += rr.total;
+  }
+
+  return sum;
+}
+
 function ComputeSum2(aSpringMap) {
 
   let sum = 0;
-  for (let i = 0; i < aSpringMap.length; i++)
-  {
+  for (let i = 0; i < aSpringMap.length; i++) {
     let rr = { total: 0 };
 
     let oo2 = [];
@@ -232,14 +235,14 @@ function ComputeSum2(aSpringMap) {
       oo2 = oo2.concat(aSpringMap[i].o);
 
     let tt2 = [];
-    for (let j = 0; j < 5; j++)
-    {
+    for (let j = 0; j < 5; j++) {
       if (j > 0)
         tt2.push('?');
       tt2 = tt2.concat(aSpringMap[i].t);
     }
 
-    ComputeArrangements(tt2, 0, false, 0, [], oo2, rr);
+    let cache = new Map();
+    ComputeArrangements2(tt2, 0, false, 0, oo2, rr, cache);
 
     console.log(tt2 + " " + oo2 + " => " + rr.total);
 
@@ -263,8 +266,7 @@ function ComputeBig(aTemplate, aTarget) {
   console.log(target2);
 
   let xx = [];
-  for (let i = 0; i < arrangements.length; i++)
-  {
+  for (let i = 0; i < arrangements.length; i++) {
     let template2 = aTemplate.slice();
     template2.push('?');
     let hh = true;
@@ -281,10 +283,9 @@ function ComputeBig(aTemplate, aTarget) {
     }
 
     xx.push(template2);
-  } 
+  }
 
-  for (let i = 0; i < arrangements.length; i++)
-  {
+  for (let i = 0; i < arrangements.length; i++) {
     let template2 = arrangements[i].split("").slice();
     let hh = true;
     for (let j = arrangements[0].length - 1; j >= 0; j--) {
@@ -299,13 +300,11 @@ function ComputeBig(aTemplate, aTarget) {
     template2.push('?');
     template2 = template2.concat(aTemplate);
 
-    let tt = xx.find((aElem)=>{ 
+    let tt = xx.find((aElem) => {
 
       let found = true;
-      for (let k = 0; k < aElem.length; k++)
-      {
-        if (aElem[k] != template2[k])
-        {
+      for (let k = 0; k < aElem.length; k++) {
+        if (aElem[k] != template2[k]) {
           found = false;
           break;
         }
@@ -313,13 +312,13 @@ function ComputeBig(aTemplate, aTarget) {
 
       return found;
 
-     });
+    });
 
     if (tt === undefined)
       xx.push(template2);
-  } 
+  }
 
-  
+
   for (let i = 0; i < xx.length; i++) {
     rr.total = 0;
     console.log(xx[i].toString().replaceAll(/,/g, ""));
@@ -331,10 +330,21 @@ function ComputeBig(aTemplate, aTarget) {
   return total;
 }
 
-function ComputeArrangements2(aTemplate, aIndex, aIsSpring, aCount, aTarget, aTotal) {
+function ComputeArrangements2(aTemplate, aIndex, aIsSpring, aCount, aTarget, aTotal, aCache) {
 
-  if (aTarget.length == 0)
-  { 
+  if (!aIsSpring && aCount == 0 && aTarget.length > 0) {
+    if (aIndex < aTemplate.length) {
+      let key = aTemplate.slice(aIndex).toString().replaceAll(/,/g, "") + "_[" + aTarget + "]";
+      let cc = aCache.get(key);
+
+      if (cc !== undefined) {
+        aTotal.total = cc;
+        return;
+      }
+    }
+  }
+
+  /*if (aTarget.length == 0) {
     if (aTemplate.slice(aIndex).indexOf('#') != -1)
       return;
 
@@ -343,15 +353,17 @@ function ComputeArrangements2(aTemplate, aIndex, aIsSpring, aCount, aTarget, aTo
     return;
   }
 
+  if (aIndex >= aTemplate.length)
+    return;*/
+
   for (let i = aIndex; i < aTemplate.length; i++)
     if (aIsSpring) {
-      if (aTemplate[i] == '?')
-      {
-       
-        if (aCount <= aTarget[0]) {
+      if (aTemplate[i] == '?') {
+
+        if ((aCount + 1) <= aTarget[0]) {
           let t1 = aTemplate.slice();
-          t1[i] = "#"; 
-          ComputeArrangements2(t1, i + 1, true, aCount + 1, aTarget.slice(), aTotal);
+          t1[i] = "#";
+          ComputeArrangements2(t1, i + 1, true, aCount + 1, aTarget.slice(), aTotal, aCache);
         }
 
         if (aCount == aTarget[0]) {
@@ -359,50 +371,58 @@ function ComputeArrangements2(aTemplate, aIndex, aIsSpring, aCount, aTarget, aTo
           let t2 = aTemplate.slice();
           t2[i] = ".";
 
-          ComputeArrangements2(t2, i + 1, false, 0, aTarget.slice(1), aTotal);
+          let total = { total: 0 };
+          let gg = aTarget.slice(1);
+          ComputeArrangements2(t2, i + 1, false, 0, gg, total, aCache);
+
+          let key = aTemplate.slice(i + 1).toString().replaceAll(/,/g, "") + "_[" + gg + "]";
+
+          if (aCache.get(key) === undefined)
+            aCache.set(key, total.total);
+
+          aTotal.total += total.total;
         }
         break;
       }
-      else if (aTemplate[i] == '#')
-      {
-        aCount++;   
+      else if (aTemplate[i] == '#') {
+        aCount++;
       }
-      else 
-      {
-        aIsSpring = false;
-        aCount = 0;
-
-        if (aCount == aTarget[0])
+      else {
+        if (aCount > 0 && aTarget.length == 0)
+        {
+          return;
+        }
+        else if (aCount == aTarget[0]) {
           aTarget.splice(0, 1);
+
+          aIsSpring = false;
+          aCount = 0;
+        }
         else
           return;
-      }    
-  }
-  else
-  {
-    if (aTemplate[i] == '?')
-      {  
+      }
+    }
+    else {
+      if (aTemplate[i] == '?') {
         let t1 = aTemplate.slice();
         t1[i] = "#";
-        ComputeArrangements2(t1, i + 1, true, 1, aTarget.slice(), aTotal);
-      
+        ComputeArrangements2(t1, i + 1, true, 1, aTarget.slice(), aTotal, aCache);
+
         let t2 = aTemplate.slice();
         t2[i] = ".";
-        ComputeArrangements2(t2, i + 1, false, 0, aTarget.slice(), aTotal);
+        ComputeArrangements2(t2, i + 1, false, 0, aTarget.slice(), aTotal, aCache);
         break;
       }
-      else if (aTemplate[i] == '#')
-      {
-        aCount++;   
+      else if (aTemplate[i] == '#') {
+        aCount++;
         aIsSpring = true;
       }
-  }
+    }
 
-  if (aTemplate.slice(aIndex).indexOf('#') > 0)
-    return;
+  //if (aTemplate.slice(aIndex).indexOf('#') > 0)
+  //  return;
 
-  if (aIsSpring)
-  {
+  if (aIsSpring) {
     if (aCount == aTarget[0])
       aTarget.splice(0, 1);
     else
@@ -412,64 +432,49 @@ function ComputeArrangements2(aTemplate, aIndex, aIsSpring, aCount, aTarget, aTo
   if (aTarget.length > 0)
     return;
 
-  console.log(aTemplate.slice(0, aIndex).toString().replaceAll(/,/g, "") + " " + aTemplate.slice(aIndex).toString().replaceAll(/,/g, "") + " [" + aTarget + "]");
-  aTotal.total++;
+  //console.log(aTemplate.slice(0, aIndex).toString().replaceAll(/,/g, "") + " " + aTemplate.slice(aIndex).toString().replaceAll(/,/g, "") + " [" + aTarget + "]");
+  //aTotal.total++;
+}
+
+function ComputeBig2(aTemplate, aTarget) {
+  let hh = [...aTemplate, '?', ...aTemplate, '?', ...aTemplate, '?', ...aTemplate, '?', ...aTemplate].join("");
+
+  let tt = [...aTarget, ...aTarget, ...aTarget, ...aTarget, ...aTarget]
+  let cache = new Map();
+  let rr = { total: 0 };
+  ComputeArrangements2(hh.split(""), 0, false, 0, tt, rr, cache);
+
+  console.log(rr, cache);
+}
+
+function ComputeSmall(aTemplate, aTarget) {
+  let cache = new Map();
+  let rr = { total: 0 };
+  ComputeArrangements2(aTemplate.split(""), 0, false, 0, aTarget, rr, cache);
+
+  console.log(rr, cache);
 }
 
 let springMap = util.MapInput("./Day12Input.txt", (aElem) => {
   let line = aElem.split(" ");
 
-  return { t: line[0].split(""), o: line[1].split(",").map((aElem)=>{ return parseInt(aElem);})};
+  return { t: line[0].split(""), o: line[1].split(",").map((aElem) => { return parseInt(aElem); }) };
 
 }, "\r\n");
 
 //console.log(springMap);
 
-//console.log(ComputeSum2(springMap));
-
-//Test1("##???????????".split(""));
-//Test1("?###?????????".split(""));
-
-//console.log(util.ArrangementsN(['.', '#'], 2));
-
-//let ee = [];
-let rr = { total: 0 };
+//console.log(ComputeSum0(springMap));
 
 let pp = "?###????????";
+let pp1 = ".??..??...?##.";
+let pp2 = "?????????##?????";
+let pp3 = ".??.??.???."; // 1,3
+let pp4 = "???#???.???#?"; // 2,1,1,2
+let pp5 = "?????????#???.#.?"  // 3,3,1 15
+ 
+//ComputeBig2(pp3, [1, 3]);
 
-let hh = [pp, '?', pp, '?', pp, '?', pp, '?', pp].join();
+ComputeSmall(pp5, [3, 3, 1]);
 
-ComputeArrangements2(pp.split(""), 0, false, 0, [3,2,1], rr);
-
-console.log(rr);
-
-//console.log(ee);
-
-//console.log(['?', '?', '?', '.', '#', '#', '#'].toString());
-
-let rr1 = { total: 0 };
-let aarr0 = [];
-//ComputeArrangements("?###????????".split(""), 0, false, 0, [], [3,2,1], rr1);
-
-//console.log(rr1);
-
-/*let aarr = [];
-
-console.log(ComputeBig("?????????##?????".split(""), [1, 9, 1], aarr));
-
-console.log(aarr.length);
-
-for (let i = 0; i < aarr.length; i++)
-{
-    console.log(aarr[i]);
-}*/
-
-/*console.log("------------------------------");
-
-for (let i = 0; i < aarr.length; i++)
-{
-  if (aarr0.indexOf(aarr[i]) == -1)
-    console.log(aarr[i]);
-}*/
-
-//ComputeSum2(springMap);
+//console.log(ComputeSum2(springMap));
