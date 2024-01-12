@@ -211,14 +211,13 @@ function ComputeSum0(aSpringMap) {
 
   let sum = 0;
   for (let i = 0; i < aSpringMap.length; i++) {
-    let rr = { total: 0 };
-
+    
     let cache = new Map();
-    ComputeArrangements2(aSpringMap[i].t, 0, false, 0, aSpringMap[i].o, rr, cache);
+    let xxx = ComputeArrangements2(aSpringMap[i].t.slice(), 0, false, 0, aSpringMap[i].o.slice(), cache);
 
-    console.log(aSpringMap[i].t.toString().replaceAll(/,/g, "") + " " + aSpringMap[i].o + " => " + rr.total);
+    console.log(aSpringMap[i].t.toString().replaceAll(/,/g, "") + " " + aSpringMap[i].o + " => " + xxx);
 
-    sum += rr.total;
+    sum += xxx;
   }
 
   return sum;
@@ -228,25 +227,17 @@ function ComputeSum2(aSpringMap) {
 
   let sum = 0;
   for (let i = 0; i < aSpringMap.length; i++) {
-    let rr = { total: 0 };
 
-    let oo2 = [];
-    for (let j = 0; j < 5; j++)
-      oo2 = oo2.concat(aSpringMap[i].o);
+    let hh = [...aSpringMap[i].t, '?', ...aSpringMap[i].t, '?', ...aSpringMap[i].t, '?', ...aSpringMap[i].t, '?', ...aSpringMap[i].t].join("");
 
-    let tt2 = [];
-    for (let j = 0; j < 5; j++) {
-      if (j > 0)
-        tt2.push('?');
-      tt2 = tt2.concat(aSpringMap[i].t);
-    }
+    let tt = [...aSpringMap[i].o, ...aSpringMap[i].o, ...aSpringMap[i].o, ...aSpringMap[i].o, ...aSpringMap[i].o];
 
     let cache = new Map();
-    ComputeArrangements2(tt2, 0, false, 0, oo2, rr, cache);
+    let total = ComputeArrangements2(hh.split(""), 0, false, 0, tt.slice(), cache);
 
-    console.log(tt2 + " " + oo2 + " => " + rr.total);
+    console.log(hh + " " + tt + " => " + total);
 
-    sum += rr.total;
+    sum += total;
   }
 
   return sum;
@@ -330,31 +321,19 @@ function ComputeBig(aTemplate, aTarget) {
   return total;
 }
 
-function ComputeArrangements2(aTemplate, aIndex, aIsSpring, aCount, aTarget, aTotal, aCache) {
+function ComputeArrangements2(aTemplate, aIndex, aIsSpring, aCount, aTarget, aCache) {
 
   if (!aIsSpring && aCount == 0 && aTarget.length > 0) {
     if (aIndex < aTemplate.length) {
       let key = aTemplate.slice(aIndex).toString().replaceAll(/,/g, "") + "_[" + aTarget + "]";
       let cc = aCache.get(key);
 
-      if (cc !== undefined) {
-        aTotal.total = cc;
-        return;
-      }
+      if (cc !== undefined)
+        return cc;
     }
   }
 
-  /*if (aTarget.length == 0) {
-    if (aTemplate.slice(aIndex).indexOf('#') != -1)
-      return;
-
-    console.log(aTemplate.slice(0, aIndex).toString().replaceAll(/,/g, "") + " " + aTemplate.slice(aIndex).toString().replaceAll(/,/g, "") + " [" + aTarget + "]");
-    aTotal.total++
-    return;
-  }
-
-  if (aIndex >= aTemplate.length)
-    return;*/
+  let sum = 0;
 
   for (let i = aIndex; i < aTemplate.length; i++)
     if (aIsSpring) {
@@ -363,7 +342,7 @@ function ComputeArrangements2(aTemplate, aIndex, aIsSpring, aCount, aTarget, aTo
         if ((aCount + 1) <= aTarget[0]) {
           let t1 = aTemplate.slice();
           t1[i] = "#";
-          ComputeArrangements2(t1, i + 1, true, aCount + 1, aTarget.slice(), aTotal, aCache);
+          sum += ComputeArrangements2(t1, i + 1, true, aCount + 1, aTarget.slice(), aCache);
         }
 
         if (aCount == aTarget[0]) {
@@ -371,47 +350,43 @@ function ComputeArrangements2(aTemplate, aIndex, aIsSpring, aCount, aTarget, aTo
           let t2 = aTemplate.slice();
           t2[i] = ".";
 
-          let total = { total: 0 };
           let gg = aTarget.slice(1);
-          ComputeArrangements2(t2, i + 1, false, 0, gg, total, aCache);
 
           let key = aTemplate.slice(i + 1).toString().replaceAll(/,/g, "") + "_[" + gg + "]";
 
-          if (aCache.get(key) === undefined)
-            aCache.set(key, total.total);
+          let jj = ComputeArrangements2(t2, i + 1, false, 0, gg, aCache);
 
-          aTotal.total += total.total;
+          if (aCache.get(key) === undefined) 
+            aCache.set(key, jj);
+
+          sum += jj;
         }
-        break;
+        return sum;
       }
       else if (aTemplate[i] == '#') {
         aCount++;
       }
       else {
-        if (aCount > 0 && aTarget.length == 0)
-        {
-          return;
-        }
-        else if (aCount == aTarget[0]) {
-          aTarget.splice(0, 1);
+        if (aTarget.length > 0 && aCount == aTarget[0]) {
+            aTarget.splice(0, 1);
 
-          aIsSpring = false;
-          aCount = 0;
+            aIsSpring = false;
+            aCount = 0;
         }
         else
-          return;
+          return sum;
       }
     }
     else {
       if (aTemplate[i] == '?') {
         let t1 = aTemplate.slice();
         t1[i] = "#";
-        ComputeArrangements2(t1, i + 1, true, 1, aTarget.slice(), aTotal, aCache);
+        sum += ComputeArrangements2(t1, i + 1, true, 1, aTarget.slice(), aCache);
 
         let t2 = aTemplate.slice();
         t2[i] = ".";
-        ComputeArrangements2(t2, i + 1, false, 0, aTarget.slice(), aTotal, aCache);
-        break;
+        sum += ComputeArrangements2(t2, i + 1, false, 0, aTarget.slice(), aCache);
+        return sum;
       }
       else if (aTemplate[i] == '#') {
         aCount++;
@@ -419,40 +394,43 @@ function ComputeArrangements2(aTemplate, aIndex, aIsSpring, aCount, aTarget, aTo
       }
     }
 
-  //if (aTemplate.slice(aIndex).indexOf('#') > 0)
-  //  return;
-
   if (aIsSpring) {
+
+    if (aTarget.length == 0)
+      return sum;
+
     if (aCount == aTarget[0])
       aTarget.splice(0, 1);
     else
-      return;
+      return sum;
   }
 
   if (aTarget.length > 0)
-    return;
+      return sum;
 
   //console.log(aTemplate.slice(0, aIndex).toString().replaceAll(/,/g, "") + " " + aTemplate.slice(aIndex).toString().replaceAll(/,/g, "") + " [" + aTarget + "]");
-  //aTotal.total++;
+  return sum + 1;
 }
 
 function ComputeBig2(aTemplate, aTarget) {
   let hh = [...aTemplate, '?', ...aTemplate, '?', ...aTemplate, '?', ...aTemplate, '?', ...aTemplate].join("");
 
-  let tt = [...aTarget, ...aTarget, ...aTarget, ...aTarget, ...aTarget]
+  let tt = [...aTarget, ...aTarget, ...aTarget, ...aTarget, ...aTarget];
   let cache = new Map();
-  let rr = { total: 0 };
-  ComputeArrangements2(hh.split(""), 0, false, 0, tt, rr, cache);
+  let rr = ComputeArrangements2(hh.split(""), 0, false, 0, tt, cache);
 
-  console.log(rr, cache);
+  //console.log(rr, cache);
+
+  return rr;
 }
 
 function ComputeSmall(aTemplate, aTarget) {
   let cache = new Map();
   let rr = { total: 0 };
-  ComputeArrangements2(aTemplate.split(""), 0, false, 0, aTarget, rr, cache);
+  let kk = ComputeArrangements2(aTemplate.split(""), 0, false, 0, aTarget, rr, cache);
 
   console.log(rr, cache);
+  return kk;
 }
 
 let springMap = util.MapInput("./Day12Input.txt", (aElem) => {
@@ -464,17 +442,21 @@ let springMap = util.MapInput("./Day12Input.txt", (aElem) => {
 
 //console.log(springMap);
 
-//console.log(ComputeSum0(springMap));
+console.log(ComputeSum0(springMap));
 
-let pp = "?###????????";
-let pp1 = ".??..??...?##.";
-let pp2 = "?????????##?????";
+let pp = "?###????????"; // 3,2,1 10
+let pp1 = ".??..??...?##."; // 1,1,3
+let pp2 = "?????????##?????"; // 1,9,1 20
 let pp3 = ".??.??.???."; // 1,3
 let pp4 = "???#???.???#?"; // 2,1,1,2
 let pp5 = "?????????#???.#.?"  // 3,3,1 15
+let pp6 = "?#???#.???.??????." // 2,1,1,1,1,4 => 8
+let pp7 = "?#.???.??????." // 1,1,1,1,4
+let pp8 = "?.??????." // 1,1,4 => 1
+let pp9 = "???.???.???#?" // 1,1,1,3 23
  
 //ComputeBig2(pp3, [1, 3]);
 
-ComputeSmall(pp5, [3, 3, 1]);
+//console.log(ComputeSmall(pp9, [1,1,1,3]));
 
-//console.log(ComputeSum2(springMap));
+console.log(ComputeSum2(springMap));
