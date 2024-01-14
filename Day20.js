@@ -52,29 +52,22 @@ function ProcessPulse(aType, aModuleName, aFromModule, aModules, aQueue, aTotal)
   }
 }
 
-function SendPulses(aCount, aModules) {
+function SendPulses(aCount, aModules, aFreq) {
 
   let total = { low: 0, high: 0 };
+
+  let cache = new Map();
 
   for (let i = 0; i < aCount; i++) {
 
     let queue = [{ type: 0, to: "broadcaster", from: "" }];
 
-    let hh = aModules.get("lg");
-
-    let count = 0;
-    for (let [k, v] of hh.pulseTypes)
-      if (v == 1) {
-        count ++;
-      }
-
-    if (count > 1) {
-      console.log(i + " " + JSON.stringify(hh.pulseTypes));
-    }
-
     while (queue.length > 0) {
-      let gg = queue.pop();
+      let gg = queue.shift();
+
       ProcessPulse(gg.type, gg.to, gg.from, aModules, queue, total);
+      if (aFreq !== undefined)
+        PrintPT(aModules, i, cache, aFreq);
     }
   }
 
@@ -93,6 +86,58 @@ function UpdateConnected(aModules) {
   }
 }
 
+function PrintPT(aModules, aCount, aCache, aFreq) {
+
+  let ff = "";
+  for (let [key, value] of aModules) {
+    if (value.type == '&') {
+      let gg = [];
+      for (let [k, v] of value.pulseTypes)
+        gg.push(v);
+
+      //if (gg.length != 1)
+      //  continue;
+
+      //if (gg.indexOf(1) >= 0)
+      //  continue;
+
+      let kk = key + "(" + gg.toString().replaceAll(/,/g, "") + ")";
+
+      if (kk != "lg(1000)" &&
+        kk != "lg(0100)" &&
+        kk != "lg(0010)" &&
+        kk != "lg(0001)")
+        continue;
+
+      let pp = aCache.get(kk);
+
+      if (pp !== undefined && (aCount - pp) > 0) {
+        ff += key + (aCount - pp);
+        aFreq.push(aCount - pp);
+      }
+
+      aCache.set(kk, aCount);
+
+      //if (ff.length > 0)
+      //  ff += "    "  
+      //ff += kk;
+    }
+  }
+
+  if (ff.length > 0)
+    console.log(aCount, ff);
+}
+
+function ResetStates(aModules) {
+  for (let [key, value] of aModules) {
+    value.on = false;
+    if (value.type !== '&')
+      continue;
+    for (let [k, v] of value.pulseTypes)
+      value.pulseTypes.set(k, 0);
+  }
+}
+
 let modules = new Map();
 util.MapInput("./Day20Input.txt", (aElem) => {
   let ww = aElem.split(" -> ");
@@ -101,11 +146,19 @@ util.MapInput("./Day20Input.txt", (aElem) => {
 
   let state = { on: false, pulseTypes: new Map(), type: ww[0][0], modules: gg };
 
-  modules.set(ww[0][0] == '%' || ww[0][0] == '&' ? ww[0].substr(1) : ww[0], state);
+  let bb = ww[0][0] == '%' || ww[0][0] == '&' ? ww[0].substr(1) : ww[0];
+
+  modules.set(bb, state);
 }, "\r\n");
 
 UpdateConnected(modules);
 
 console.log(modules);
 
-console.log(SendPulses(1000000000000, modules));
+console.log(SendPulses(1000, modules));
+
+ResetStates(modules);
+
+let freq = [];
+SendPulses(10000, modules, freq);
+console.log(util.LCM(...freq.slice(0, 4)));
