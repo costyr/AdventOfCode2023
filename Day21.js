@@ -36,14 +36,14 @@ function PrintPlots(aPlots, aMap, aMinMax) {
 
   let mm = new matrix.Matrix(width + 1, height + 1, '.');
 
-  for (let i = 0; i < height + 1; i++)
-    for (let j = 0; j < width + 1; j++) {
+  for (let i = minY; i <= maxY; i++)
+    for (let j = minX; j <= maxX; j++) {
 
-     //if (i >= minY && i <= maxY && j >= minX && j <= maxX) {
+     if (i >= minY && i <= maxY && j >= minX && j <= maxX) {
         let [x, y] = TranslateToMap([j, i], aMap);
 
-        mm.SetValue(i, j, aMap[y][x]);
-      //}
+        mm.SetValue(i - minY, j - minX, aMap[y][x]);
+      }
     }
 
   for (let i = 0; i < aPlots.length; i++) {
@@ -51,16 +51,16 @@ function PrintPlots(aPlots, aMap, aMinMax) {
     let x0 = aPlots[i][0];
     let y0 = aPlots[i][1];
 
-  //  if (y0 >= minY && y0 <= maxY && x0 >= minX && x0 <= maxX) {
+    if (y0 >= minY && y0 <= maxY && x0 >= minX && x0 <= maxX) {
 
       let x = x0 - minX;
       let y = y0 - minY;
 
       mm.SetValue(y, x, 'O');
-   // }
+    }
   }
 
-  mm.Print("");
+  return mm.ToString("");
 }
 
 function FindStart(aMap) {
@@ -127,13 +127,45 @@ function FindMaxPos(aSteps, aStart, aMap, aPart1) {
     allPos = newPos;
   }
 
-  /*PrintPlots(allPos, aMap, [-11, -1, 0, 10]);
-  console.log("\n---------\n");
-  PrintPlots(allPos, aMap, [0, 10, 0, 10]);
-  console.log("\n---------\n");
-  PrintPlots(allPos, aMap, [12, 22, 0, 10]);*/
+  let queue = [[0, 10, 0, 10]];
 
-  PrintPlots(allPos, aMap);
+  let visited = [];
+
+  let tt = new Map();
+  while(queue.length > 0) {
+
+  let ff = queue.shift();
+
+  visited.push(ff);
+
+  let key = PrintPlots(allPos, aMap, ff);
+
+  if (key.indexOf('O') == -1)
+    continue;
+
+  let cc = tt.get(key);
+
+  if (cc === undefined)
+    tt.set(key, 1);
+  else
+    tt.set(key, cc + 1);
+
+  for (let i = 0; i < kNeighbours.length; i++)
+  {
+    let x = kNeighbours[i][0];
+    let y = kNeighbours[i][1];
+
+    let bb = [ ff[0] + 11 * x, ff[1] + 11 * x, ff[2] + 11 * y, ff[3] + 11 * y];
+
+    if (visited.find(a => { return a[0] == bb[0] && a[1] == bb[1] && a[2] == bb[2] && a[3] == bb[3]; }) === undefined)
+      queue.push(bb);
+  }  
+
+  }
+ 
+  console.log(tt);
+
+  //console.log(PrintPlots(allPos, aMap));
 
 
   return allPos.length;
@@ -147,4 +179,4 @@ PrintMap(map);
 
 let start = FindStart(map);
 
-console.log(FindMaxPos(6, start, map, false));
+console.log(FindMaxPos(70, start, map, false));
