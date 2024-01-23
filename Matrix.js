@@ -150,6 +150,17 @@ class Matrix {
       console.log(PrintLine(this.mMatix[i], aSeparator, aFilterFunc));
   }
 
+  ToString(aSeparator, aFilterFunc) {
+    let ss = "";
+    for (let i = 0; i < this.mMatix.length; i++) {
+      if (ss.length > 0)
+        ss += " ";
+      ss += PrintLine(this.mMatix[i], aSeparator, aFilterFunc);
+    }
+
+    return ss;
+  }
+
   PrintReverse(aSeparator, aFilterFunc) {
     for (let i = this.mMatix.length - 1; i >= 0; i--)
       console.log(PrintLine(this.mMatix[i], aSeparator, aFilterFunc));
