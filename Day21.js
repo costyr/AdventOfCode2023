@@ -122,12 +122,15 @@ function FindMaxPos(aSteps, aStart, aMap, aPart1) {
       }
     }
 
-    console.log(i + " " + newPos.length);
+    //console.log(i + " " + newPos.length);
 
     allPos = newPos;
   }
 
-  let queue = [[0, 10, 0, 10]];
+  let w = aMap[0].length;
+  let h = aMap.length;
+
+  let queue = [[0, w - 1, 0, h - 1]];
 
   let visited = [];
 
@@ -155,15 +158,35 @@ function FindMaxPos(aSteps, aStart, aMap, aPart1) {
     let x = kNeighbours[i][0];
     let y = kNeighbours[i][1];
 
-    let bb = [ ff[0] + 11 * x, ff[1] + 11 * x, ff[2] + 11 * y, ff[3] + 11 * y];
+    let bb = [ ff[0] + w * x, ff[1] + w * x, ff[2] + h * y, ff[3] + h * y];
 
-    if (visited.find(a => { return a[0] == bb[0] && a[1] == bb[1] && a[2] == bb[2] && a[3] == bb[3]; }) === undefined)
-      queue.push(bb);
+    if (visited.find((a) => { return a[0] == bb[0] && a[1] == bb[1] && a[2] == bb[2] && a[3] == bb[3]; }) === undefined) {
+
+      if (queue.find((a) => { return a[0] == bb[0] && a[1] == bb[1] && a[2] == bb[2] && a[3] == bb[3]; }) === undefined)
+        queue.push(bb);
+    }
   }  
 
   }
  
   console.log(tt);
+
+  let total = 0;
+  let total2 = 0;
+  for (let [key, value] of tt)
+  {
+    let count = 0;
+    for (let i = 0; i < key.length; i++)
+      if (key[i] == 'O')
+        count ++;
+
+    if (value < 10)
+      total2 += count * value    
+    else
+      total += count * value;
+  }
+
+  console.log(total, total2);
 
   //console.log(PrintPlots(allPos, aMap));
 
@@ -175,8 +198,8 @@ let map = util.MapInput("./Day21TestInput.txt", (aElem) => {
   return aElem.split("");
 }, "\r\n");
 
-PrintMap(map);
+//PrintMap(map);
 
 let start = FindStart(map);
 
-console.log(FindMaxPos(70, start, map, false));
+console.log(FindMaxPos(250, start, map, false));
